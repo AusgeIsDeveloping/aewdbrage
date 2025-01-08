@@ -1,151 +1,190 @@
--- Key-System
-local keyRequired = "999"
-local isUnlocked = false
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MainMenuGui"
+screenGui.Parent = game.CoreGui
 
--- UI-Erstellung
-local ScreenGui = Instance.new("ScreenGui")
-local Frame = Instance.new("Frame")
-local KeyInput = Instance.new("TextBox")
-local SubmitButton = Instance.new("TextButton")
-local ToggleButton = Instance.new("TextButton")
-local Menu = Instance.new("Frame")
-local ZenkaiButton = Instance.new("TextButton")
-local AttackButton = Instance.new("TextButton")
-local AgilityButton = Instance.new("TextButton")
-local KIButton = Instance.new("TextButton")
+-- Hauptmenü-Frame
+local mainMenu = Instance.new("Frame")
+mainMenu.Size = UDim2.new(0, 300, 0, 400)
+mainMenu.Position = UDim2.new(1, -310, 1, -410)
+mainMenu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+mainMenu.Visible = false
+mainMenu.Parent = screenGui
 
--- UI-Eigenschaften
-ScreenGui.Name = "DragonBallRageScript"
-ScreenGui.Parent = game.CoreGui
+-- Schließen-Button für Hauptmenü
+local closeButtonMainMenu = Instance.new("TextButton")
+closeButtonMainMenu.Size = UDim2.new(0, 30, 0, 30)
+closeButtonMainMenu.Position = UDim2.new(1, -35, 0, 5)
+closeButtonMainMenu.Text = "X"
+closeButtonMainMenu.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButtonMainMenu.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+closeButtonMainMenu.Font = Enum.Font.SourceSans
+closeButtonMainMenu.TextSize = 18
+closeButtonMainMenu.Parent = mainMenu
 
-Frame.Name = "KeyFrame"
-Frame.Parent = ScreenGui
-Frame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-Frame.Size = UDim2.new(0, 300, 0, 150)
-Frame.Position = UDim2.new(0.5, -150, 0.5, -75)
+-- Funktion zum Schließen des Hauptmenüs
+closeButtonMainMenu.MouseButton1Click:Connect(function()
+    mainMenu.Visible = false
+end)
 
-KeyInput.Name = "KeyInput"
-KeyInput.Parent = Frame
-KeyInput.Size = UDim2.new(0, 200, 0, 50)
-KeyInput.Position = UDim2.new(0.5, -100, 0.2, 0)
-KeyInput.PlaceholderText = "Enter Key"
-KeyInput.Text = ""
+-- Menü-Button (MMAew) zum Ein- und Ausklappen
+local menuButton = Instance.new("TextButton")
+menuButton.Size = UDim2.new(0, 50, 0, 50)
+menuButton.Position = UDim2.new(1, -60, 1, -60) -- Unten rechts
+menuButton.Text = "≡"
+menuButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+menuButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+menuButton.Font = Enum.Font.SourceSans
+menuButton.TextSize = 24
+menuButton.Parent = screenGui
 
-SubmitButton.Name = "SubmitButton"
-SubmitButton.Parent = Frame
-SubmitButton.Size = UDim2.new(0, 200, 0, 50)
-SubmitButton.Position = UDim2.new(0.5, -100, 0.6, 0)
-SubmitButton.Text = "Submit Key"
+-- Toggle Funktion für das Menü
+menuButton.MouseButton1Click:Connect(function()
+    mainMenu.Visible = not mainMenu.Visible
+end)
 
--- Menü-Button unten rechts
-ToggleButton.Name = "ToggleButton"
-ToggleButton.Parent = ScreenGui
-ToggleButton.Size = UDim2.new(0, 100, 0, 50)
-ToggleButton.Position = UDim2.new(1, -110, 1, -60)
-ToggleButton.Text = "Menu"
-ToggleButton.Visible = false
+-- Teleport and Hit Button
+local teleportButton = Instance.new("TextButton")
+teleportButton.Size = UDim2.new(1, -10, 0, 40)
+teleportButton.Position = UDim2.new(0, 5, 0, 60)
+teleportButton.Text = "Teleport and Hit"
+teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+teleportButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+teleportButton.Font = Enum.Font.SourceSans
+teleportButton.TextSize = 18
+teleportButton.Parent = mainMenu
 
--- Menü-Eigenschaften
-Menu.Name = "Menu"
-Menu.Parent = ScreenGui
-Menu.Size = UDim2.new(0, 200, 0, 300)
-Menu.Position = UDim2.new(1, -210, 0.5, -150)
-Menu.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-Menu.Visible = false
+teleportButton.MouseButton1Click:Connect(function()
+    local players = game.Players:GetPlayers()
+    local localPlayer = game.Players.LocalPlayer
 
-ZenkaiButton.Name = "ZenkaiButton"
-ZenkaiButton.Parent = Menu
-ZenkaiButton.Size = UDim2.new(0, 180, 0, 50)
-ZenkaiButton.Position = UDim2.new(0.5, -90, 0.1, 0)
-ZenkaiButton.Text = "Auto Zenkai Farm: OFF"
+    -- Filtere alle Spieler, die nicht der lokale Spieler sind und die ein Character haben
+    local otherPlayers = {}
+    for _, player in ipairs(players) do
+        if player ~= localPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            table.insert(otherPlayers, player)
+        end
+    end
 
-AttackButton.Name = "AttackButton"
-AttackButton.Parent = Menu
-AttackButton.Size = UDim2.new(0, 180, 0, 50)
-AttackButton.Position = UDim2.new(0.5, -90, 0.3, 0)
-AttackButton.Text = "Auto Attack Farm: OFF"
+    -- Funktion zum "Durchrattern" durch alle Spieler
+    local function teleportAndHit(player)
+        -- Teleportiere den lokalen Spieler zum aktuellen Zielspieler
+        localPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
+        task.wait(0.1) -- Kurze Verzögerung für den Effekt
 
-AgilityButton.Name = "AgilityButton"
-AgilityButton.Parent = Menu
-AgilityButton.Size = UDim2.new(0, 180, 0, 50)
-AgilityButton.Position = UDim2.new(0.5, -90, 0.5, 0)
-AgilityButton.Text = "Auto Agility Farm: OFF"
+        -- Feuere den ClickDetector des Zielspielers ab, falls vorhanden
+        local clickDetector = player.Character:FindFirstChildWhichIsA("ClickDetector")
+        if clickDetector then
+            fireclickdetector(clickDetector)
+        end
+    end
 
-KIButton.Name = "KIButton"
-KIButton.Parent = Menu
-KIButton.Size = UDim2.new(0, 180, 0, 50)
-KIButton.Position = UDim2.new(0.5, -90, 0.7, 0)
-KIButton.Text = "Auto KI Farm: OFF"
-
--- Variablen für Toggles
-local zenkaiEnabled = false
-local attackEnabled = false
-local agilityEnabled = false
-local kiEnabled = false
-
--- Funktionalität
-SubmitButton.MouseButton1Click:Connect(function()
-    if KeyInput.Text == keyRequired then
-        isUnlocked = true
-        Frame.Visible = false
-        ToggleButton.Visible = true
-    else
-        KeyInput.Text = "Invalid Key"
+    -- Gehe durch alle Spieler nacheinander
+    for _, player in ipairs(otherPlayers) do
+        teleportAndHit(player)
     end
 end)
 
-ToggleButton.MouseButton1Click:Connect(function()
-    Menu.Visible = not Menu.Visible
-end)
+-- ESP Button
+local espButton = Instance.new("TextButton")
+espButton.Size = UDim2.new(1, -10, 0, 40)
+espButton.Position = UDim2.new(0, 5, 0, 110)
+espButton.Text = "Toggle ESP"
+espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+espButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+espButton.Font = Enum.Font.SourceSans
+espButton.TextSize = 18
+espButton.Parent = mainMenu
 
-ZenkaiButton.MouseButton1Click:Connect(function()
-    zenkaiEnabled = not zenkaiEnabled
-    if zenkaiEnabled then
-        ZenkaiButton.Text = "Auto Zenkai Farm: ON"
-        print("Zenkai Farm aktiviert!")
-        -- Füge hier den Code für Auto Zenkai Farm ein
+local espEnabled = false
+
+-- Funktion für das Hinzufügen von ESP zu Spielern
+local function createESP(player)
+    -- BillboardGui für den ESP
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Size = UDim2.new(0, 200, 0, 50)
+    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = player.Character
+
+    -- TextLabel für den ESP
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = player.Name
+    textLabel.TextColor3 = Color3.fromRGB(255, 0, 0)  -- Rot für alle Spieler
+    textLabel.Font = Enum.Font.SourceSansBold
+    textLabel.TextSize = 14
+    textLabel.Parent = billboardGui
+
+    -- Optional: Füge "Owner" unter den Spielernamen hinzu, falls der Spieler der Besitzer ist
+    if player.Name == "Aewpuu" then  -- Ersetze "Aewpuu" mit dem Namen des Besitzers
+        local ownerLabel = Instance.new("TextLabel")
+        ownerLabel.Size = UDim2.new(1, 0, 0, 20)
+        ownerLabel.Position = UDim2.new(0, 0, 1, 0)
+        ownerLabel.BackgroundTransparency = 1
+        ownerLabel.Text = "Owner"
+        ownerLabel.TextColor3 = Color3.fromRGB(255, 0, 0)  -- Rot für "Owner"
+        ownerLabel.Font = Enum.Font.SourceSansBold
+        ownerLabel.TextSize = 14
+        ownerLabel.Parent = billboardGui
+    end
+
+    -- Verfolge den Charakter neu, falls er respawnt
+    player.CharacterAdded:Connect(function(character)
+        -- Stelle sicher, dass der ESP weiterhin über dem Kopf bleibt
+        if character:FindFirstChild("Head") then
+            billboardGui.Adornee = character.Head
+        end
+    end)
+
+    -- Stelle sicher, dass der ESP immer über dem Kopf bleibt
+    if player.Character and player.Character:FindFirstChild("Head") then
+        billboardGui.Adornee = player.Character.Head
+    end
+end
+
+-- Toggle ESP-Button
+espButton.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    if espEnabled then
+        -- ESP für alle Spieler aktivieren
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                createESP(player)
+            end
+        end
     else
-        ZenkaiButton.Text = "Auto Zenkai Farm: OFF"
-        print("Zenkai Farm deaktiviert!")
-        -- Beende hier den Code für Auto Zenkai Farm
+        -- ESP für alle Spieler deaktivieren
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("BillboardGui") then
+                player.Character:FindFirstChild("BillboardGui"):Destroy()
+            end
+        end
     end
 end)
 
-AttackButton.MouseButton1Click:Connect(function()
-    attackEnabled = not attackEnabled
-    if attackEnabled then
-        AttackButton.Text = "Auto Attack Farm: ON"
-        print("Attack Farm aktiviert!")
-        -- Füge hier den Code für Auto Attack Farm ein
-    else
-        AttackButton.Text = "Auto Attack Farm: OFF"
-        print("Attack Farm deaktiviert!")
-        -- Beende hier den Code für Auto Attack Farm
+-- Noclip Button
+local noclipButton = Instance.new("TextButton")
+noclipButton.Size = UDim2.new(1, -10, 0, 40)
+noclipButton.Position = UDim2.new(0, 5, 0, 160)
+noclipButton.Text = "Toggle Noclip"
+noclipButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+noclipButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+noclipButton.Font = Enum.Font.SourceSans
+noclipButton.TextSize = 18
+noclipButton.Parent = mainMenu
+
+local noclip = false
+game:GetService("RunService").Stepped:Connect(function()
+    if noclip and game.Players.LocalPlayer.Character then
+        for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
     end
 end)
 
-AgilityButton.MouseButton1Click:Connect(function()
-    agilityEnabled = not agilityEnabled
-    if agilityEnabled then
-        AgilityButton.Text = "Auto Agility Farm: ON"
-        print("Agility Farm aktiviert!")
-        -- Füge hier den Code für Auto Agility Farm ein
-    else
-        AgilityButton.Text = "Auto Agility Farm: OFF"
-        print("Agility Farm deaktiviert!")
-        -- Beende hier den Code für Auto Agility Farm
-    end
-end)
-
-KIButton.MouseButton1Click:Connect(function()
-    kiEnabled = not kiEnabled
-    if kiEnabled then
-        KIButton.Text = "Auto KI Farm: ON"
-        print("KI Farm aktiviert!")
-        -- Füge hier den Code für Auto KI Farm ein
-    else
-        KIButton.Text = "Auto KI Farm: OFF"
-        print("KI Farm deaktiviert!")
-        -- Beende hier den Code für Auto KI Farm
-    end
+noclipButton.MouseButton1Click:Connect(function()
+    noclip = not noclip
 end)
