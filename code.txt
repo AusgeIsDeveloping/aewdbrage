@@ -188,3 +188,41 @@ end)
 noclipButton.MouseButton1Click:Connect(function()
     noclip = not noclip
 end)
+
+-- In den Boden ziehen Button
+local groundButton = Instance.new("TextButton")
+groundButton.Size = UDim2.new(1, -10, 0, 40)
+groundButton.Position = UDim2.new(0, 5, 0, 210)
+groundButton.Text = "Pull to Ground (3s)"
+groundButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+groundButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+groundButton.Font = Enum.Font.SourceSans
+groundButton.TextSize = 18
+groundButton.Parent = mainMenu
+
+groundButton.MouseButton1Click:Connect(function()
+    local character = game.Players.LocalPlayer.Character
+    if character then
+        -- Spieler für 3 Sekunden unsichtbar machen
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Transparency = 1
+                part.CanCollide = false
+            end
+        end
+
+        -- Spieler in den Boden ziehen (mit einer kleinen Positionänderung)
+        local originalPosition = character.HumanoidRootPart.Position
+        character.HumanoidRootPart.CFrame = CFrame.new(originalPosition.X, originalPosition.Y - 5, originalPosition.Z)
+
+        -- Nach 3 Sekunden den Spieler wieder sichtbar machen und in der neuen Position lassen
+        task.wait(3)
+
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Transparency = 0
+                part.CanCollide = true
+            end
+        end
+    end
+end)
