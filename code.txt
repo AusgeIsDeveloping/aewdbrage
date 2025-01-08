@@ -42,16 +42,161 @@ menuButton.MouseButton1Click:Connect(function()
     mainMenu.Visible = not mainMenu.Visible
 end)
 
--- Button für das "Bodenziehen"
+-- Linker Button (ESP, Noclip, Teleportieren)
+local leftMenuButton = Instance.new("TextButton")
+leftMenuButton.Size = UDim2.new(0, 50, 0, 50)
+leftMenuButton.Position = UDim2.new(0, 10, 1, -60) -- Unten links
+leftMenuButton.Text = "Left"
+leftMenuButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+leftMenuButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+leftMenuButton.Font = Enum.Font.SourceSans
+leftMenuButton.TextSize = 24
+leftMenuButton.Parent = screenGui
+
+-- Rechter Button (Bodenziehen, Wiederhochkommen)
+local rightMenuButton = Instance.new("TextButton")
+rightMenuButton.Size = UDim2.new(0, 50, 0, 50)
+rightMenuButton.Position = UDim2.new(1, -60, 1, -60) -- Unten rechts
+rightMenuButton.Text = "Right"
+rightMenuButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+rightMenuButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+rightMenuButton.Font = Enum.Font.SourceSans
+rightMenuButton.TextSize = 24
+rightMenuButton.Parent = screenGui
+
+-- Linkes Menü für ESP, Noclip und Teleportieren
+local leftMenu = Instance.new("Frame")
+leftMenu.Size = UDim2.new(0, 300, 0, 200)
+leftMenu.Position = UDim2.new(0, 0, 1, -220)
+leftMenu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+leftMenu.Visible = false
+leftMenu.Parent = screenGui
+
+-- Schließen-Button für das linke Menü
+local closeButtonLeftMenu = Instance.new("TextButton")
+closeButtonLeftMenu.Size = UDim2.new(0, 30, 0, 30)
+closeButtonLeftMenu.Position = UDim2.new(1, -35, 0, 5)
+closeButtonLeftMenu.Text = "X"
+closeButtonLeftMenu.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButtonLeftMenu.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+closeButtonLeftMenu.Font = Enum.Font.SourceSans
+closeButtonLeftMenu.TextSize = 18
+closeButtonLeftMenu.Parent = leftMenu
+
+-- Funktion zum Schließen des linken Menüs
+closeButtonLeftMenu.MouseButton1Click:Connect(function()
+    leftMenu.Visible = false
+end)
+
+-- ESP Button im linken Menü
+local espButton = Instance.new("TextButton")
+espButton.Size = UDim2.new(1, -10, 0, 40)
+espButton.Position = UDim2.new(0, 5, 0, 60)
+espButton.Text = "Toggle ESP"
+espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+espButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+espButton.Font = Enum.Font.SourceSans
+espButton.TextSize = 18
+espButton.Parent = leftMenu
+
+local espEnabled = false
+
+-- Funktion für das Hinzufügen von ESP zu Spielern
+local function createESP(player)
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Size = UDim2.new(0, 200, 0, 50)
+    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = player.Character
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = player.Name
+    textLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Alle Namen in Rot
+    textLabel.Font = Enum.Font.SourceSansBold
+    textLabel.TextSize = 14
+    textLabel.Parent = billboardGui
+end
+
+-- Toggle ESP-Button im linken Menü
+espButton.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    if espEnabled then
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                createESP(player)
+            end
+        end
+    else
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("BillboardGui") then
+                player.Character:FindFirstChild("BillboardGui"):Destroy()
+            end
+        end
+    end
+end)
+
+-- Noclip Button im linken Menü
+local noclipButton = Instance.new("TextButton")
+noclipButton.Size = UDim2.new(1, -10, 0, 40)
+noclipButton.Position = UDim2.new(0, 5, 0, 110)
+noclipButton.Text = "Toggle Noclip"
+noclipButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+noclipButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+noclipButton.Font = Enum.Font.SourceSans
+noclipButton.TextSize = 18
+noclipButton.Parent = leftMenu
+
+local noclip = false
+game:GetService("RunService").Stepped:Connect(function()
+    if noclip and game.Players.LocalPlayer.Character then
+        for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+noclipButton.MouseButton1Click:Connect(function()
+    noclip = not noclip
+end)
+
+-- Rechtes Menü für Bodenziehen und Wiederhochkommen
+local rightMenu = Instance.new("Frame")
+rightMenu.Size = UDim2.new(0, 300, 0, 200)
+rightMenu.Position = UDim2.new(1, -310, 1, -220)
+rightMenu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+rightMenu.Visible = false
+rightMenu.Parent = screenGui
+
+-- Schließen-Button für das rechte Menü
+local closeButtonRightMenu = Instance.new("TextButton")
+closeButtonRightMenu.Size = UDim2.new(0, 30, 0, 30)
+closeButtonRightMenu.Position = UDim2.new(1, -35, 0, 5)
+closeButtonRightMenu.Text = "X"
+closeButtonRightMenu.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButtonRightMenu.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+closeButtonRightMenu.Font = Enum.Font.SourceSans
+closeButtonRightMenu.TextSize = 18
+closeButtonRightMenu.Parent = rightMenu
+
+-- Funktion zum Schließen des rechten Menüs
+closeButtonRightMenu.MouseButton1Click:Connect(function()
+    rightMenu.Visible = false
+end)
+
+-- Bodenziehen Button im rechten Menü
 local groundButton = Instance.new("TextButton")
 groundButton.Size = UDim2.new(1, -10, 0, 40)
-groundButton.Position = UDim2.new(0, 5, 0, 210)
+groundButton.Position = UDim2.new(0, 5, 0, 60)
 groundButton.Text = "Ground Sink"
 groundButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 groundButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 groundButton.Font = Enum.Font.SourceSans
 groundButton.TextSize = 18
-groundButton.Parent = mainMenu
+groundButton.Parent = rightMenu
 
 -- Funktion zum Boden ziehen und wieder hochkommen
 groundButton.MouseButton1Click:Connect(function()
@@ -61,14 +206,23 @@ groundButton.MouseButton1Click:Connect(function()
     
     if character and humanoidRootPart then
         -- Spieler nach unten ziehen
-        local targetPosition = humanoidRootPart.Position - Vector3.new(0, 5, 0) -- Zieht den Spieler 5 Studs in den Boden
+        local targetPosition = humanoidRootPart.Position - Vector3.new(0, 5, 0)
         humanoidRootPart.CFrame = CFrame.new(targetPosition)
         
         -- Spieler bleibt für 3 Sekunden unten
         task.wait(3)
         
         -- Spieler nach oben bringen
-        local newPosition = humanoidRootPart.Position + Vector3.new(0, 5, 0) -- Spieler wird um 5 Studs nach oben bewegt
+        local newPosition = humanoidRootPart.Position + Vector3.new(0, 5, 0)
         humanoidRootPart.CFrame = CFrame.new(newPosition)
     end
+end)
+
+-- Funktion zum Ein- und Ausklappen der Menüs
+leftMenuButton.MouseButton1Click:Connect(function()
+    leftMenu.Visible = not leftMenu.Visible
+end)
+
+rightMenuButton.MouseButton1Click:Connect(function()
+    rightMenu.Visible = not rightMenu.Visible
 end)
