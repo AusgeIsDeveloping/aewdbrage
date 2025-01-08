@@ -42,48 +42,6 @@ menuButton.MouseButton1Click:Connect(function()
     mainMenu.Visible = not mainMenu.Visible
 end)
 
--- Teleport and Hit Button
-local teleportButton = Instance.new("TextButton")
-teleportButton.Size = UDim2.new(1, -10, 0, 40)
-teleportButton.Position = UDim2.new(0, 5, 0, 60)
-teleportButton.Text = "Teleport and Hit"
-teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-teleportButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-teleportButton.Font = Enum.Font.SourceSans
-teleportButton.TextSize = 18
-teleportButton.Parent = mainMenu
-
-teleportButton.MouseButton1Click:Connect(function()
-    local players = game.Players:GetPlayers()
-    local localPlayer = game.Players.LocalPlayer
-
-    -- Filtere alle Spieler, die nicht der lokale Spieler sind und die ein Character haben
-    local otherPlayers = {}
-    for _, player in ipairs(players) do
-        if player ~= localPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            table.insert(otherPlayers, player)
-        end
-    end
-
-    -- Funktion zum "Durchrattern" durch alle Spieler
-    local function teleportAndHit(player)
-        -- Teleportiere den lokalen Spieler zum aktuellen Zielspieler
-        localPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
-        task.wait(0.1) -- Kurze Verzögerung für den Effekt
-
-        -- Feuere den ClickDetector des Zielspielers ab, falls vorhanden
-        local clickDetector = player.Character:FindFirstChildWhichIsA("ClickDetector")
-        if clickDetector then
-            fireclickdetector(clickDetector)
-        end
-    end
-
-    -- Gehe durch alle Spieler nacheinander
-    for _, player in ipairs(otherPlayers) do
-        teleportAndHit(player)
-    end
-end)
-
 -- ESP Button
 local espButton = Instance.new("TextButton")
 espButton.Size = UDim2.new(1, -10, 0, 40)
@@ -203,7 +161,14 @@ groundButton.Parent = mainMenu
 groundButton.MouseButton1Click:Connect(function()
     local character = game.Players.LocalPlayer.Character
     if character then
-        -- Spieler für 3 Sekunden unsichtbar machen
+        -- Spieler für 3 Sekunden unsichtbar machen und im Boden positionieren
+        local originalPosition = character.HumanoidRootPart.Position
+        local groundPosition = Vector3.new(originalPosition.X, originalPosition.Y - 5, originalPosition.Z)
+
+        -- Spieler in den Boden ziehen (mit einer kleinen Positionänderung)
+        character.HumanoidRootPart.CFrame = CFrame.new(groundPosition)
+
+        -- Unsichtbar machen
         for _, part in pairs(character:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.Transparency = 1
@@ -211,18 +176,19 @@ groundButton.MouseButton1Click:Connect(function()
             end
         end
 
-        -- Spieler in den Boden ziehen (mit einer kleinen Positionänderung)
-        local originalPosition = character.HumanoidRootPart.Position
-        character.HumanoidRootPart.CFrame = CFrame.new(originalPosition.X, originalPosition.Y - 5, originalPosition.Z)
-
-        -- Nach 3 Sekunden den Spieler wieder sichtbar machen und in der neuen Position lassen
+        -- Nach 3 Sekunden den Spieler wieder sichtbar machen und an die neue Position zurücksetzen
         task.wait(3)
 
+        -- Spieler wieder sichtbar machen und an die ursprüngliche Position zurücksetzen
         for _, part in pairs(character:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.Transparency = 0
                 part.CanCollide = true
             end
         end
+
+        -- Spieler an die ursprüngliche Position zurücksetzen
+        character.HumanoidRootPart.CFrame = CFrame.new(originalPosition)
     end
 end)
+
