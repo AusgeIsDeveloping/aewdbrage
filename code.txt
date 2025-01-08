@@ -1,5 +1,5 @@
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "MainMenuGui"
+screenGui.Name = "RainbowGui"
 screenGui.Parent = game.CoreGui
 
 -- Rainbow Farben Funktion
@@ -8,201 +8,125 @@ local function getRainbowColor()
     return Color3.fromHSV(time % 5 / 5, 1, 1)
 end
 
--- Hauptmenü-Button zum Aktivieren des linken Menüs
-local leftMenuButton = Instance.new("TextButton")
-leftMenuButton.Size = UDim2.new(0, 50, 0, 50)
-leftMenuButton.Position = UDim2.new(0, 10, 1, -60) -- Unten links
-leftMenuButton.Text = "≡"
-leftMenuButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-leftMenuButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-leftMenuButton.Font = Enum.Font.SourceSans
-leftMenuButton.TextSize = 24
-leftMenuButton.Parent = screenGui
+-- Rainbow Hintergrund für GUI
+local function createRainbowBackground(frame)
+    frame.BackgroundColor3 = getRainbowColor()
+    game:GetService("RunService").Heartbeat:Connect(function()
+        frame.BackgroundColor3 = getRainbowColor()
+    end)
+end
 
--- Linkes Menü (Speed, Noclip)
-local leftMenu = Instance.new("Frame")
-leftMenu.Size = UDim2.new(0, 300, 0, 200)
-leftMenu.Position = UDim2.new(0, 0, 1, -220)
-leftMenu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-leftMenu.Visible = false
-leftMenu.Parent = screenGui
+-- Noclip und Speed Modifikationen
+local noclip = false
+local canDelete = false
+local deletedObjects = {}
 
--- Button zum Schließen des linken Menüs
-local closeButtonLeftMenu = Instance.new("TextButton")
-closeButtonLeftMenu.Size = UDim2.new(0, 30, 0, 30)
-closeButtonLeftMenu.Position = UDim2.new(1, -35, 0, 5)
-closeButtonLeftMenu.Text = "X"
-closeButtonLeftMenu.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeButtonLeftMenu.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-closeButtonLeftMenu.Font = Enum.Font.SourceSans
-closeButtonLeftMenu.TextSize = 20
-closeButtonLeftMenu.Parent = leftMenu
+-- Erstelle das Hauptframe (Menü wird hier eingefügt)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 200)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+mainFrame.Visible = false  -- Menü ist zunächst unsichtbar
+mainFrame.Parent = screenGui
 
-closeButtonLeftMenu.MouseButton1Click:Connect(function()
-    leftMenu.Visible = false
-end)
+createRainbowBackground(mainFrame)
 
--- Speed Verdoppeln Button (Linkes Menü)
-local speedButton = Instance.new("TextButton")
-speedButton.Size = UDim2.new(1, -10, 0, 40)
-speedButton.Position = UDim2.new(0, 5, 0, 60)
-speedButton.Text = "Speed x2"
-speedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-speedButton.Font = Enum.Font.SourceSans
-speedButton.TextSize = 18
-speedButton.Parent = leftMenu
-
-speedButton.MouseButton1Click:Connect(function()
-    local player = game.Players.LocalPlayer
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        local humanoid = player.Character.Humanoid
-        humanoid.WalkSpeed = humanoid.WalkSpeed * 2
-    end
-end)
-
--- Noclip Button (Linkes Menü)
+-- Noclip Toggle Button
 local noclipButton = Instance.new("TextButton")
 noclipButton.Size = UDim2.new(1, -10, 0, 40)
-noclipButton.Position = UDim2.new(0, 5, 0, 110)
+noclipButton.Position = UDim2.new(0, 5, 0, 60)
 noclipButton.Text = "Toggle Noclip"
 noclipButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 noclipButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 noclipButton.Font = Enum.Font.SourceSans
 noclipButton.TextSize = 18
-noclipButton.Parent = leftMenu
+noclipButton.Parent = mainFrame
 
-local noclip = false
-game:GetService("RunService").Stepped:Connect(function()
-    if noclip and game.Players.LocalPlayer.Character then
-        for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+noclipButton.MouseButton1Click:Connect(function()
+    noclip = not noclip
+    if noclip then
+        -- Verdoppelt die Geschwindigkeit, wenn Noclip aktiviert ist
+        local player = game.Players.LocalPlayer
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            local humanoid = player.Character.Humanoid
+            humanoid.WalkSpeed = humanoid.WalkSpeed * 2
+        end
+    else
+        -- Setzt die Geschwindigkeit zurück, wenn Noclip deaktiviert ist
+        local player = game.Players.LocalPlayer
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            local humanoid = player.Character.Humanoid
+            humanoid.WalkSpeed = humanoid.WalkSpeed / 2
+        end
+    end
+end)
+
+-- Gegenstände löschen Button
+local deleteButton = Instance.new("TextButton")
+deleteButton.Size = UDim2.new(1, -10, 0, 40)
+deleteButton.Position = UDim2.new(0, 5, 0, 110)
+deleteButton.Text = "Toggle Delete Mode"
+deleteButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+deleteButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+deleteButton.Font = Enum.Font.SourceSans
+deleteButton.TextSize = 18
+deleteButton.Parent = mainFrame
+
+deleteButton.MouseButton1Click:Connect(function()
+    canDelete = not canDelete
+    if not canDelete then
+        -- Alle gelöschten Objekte zurücksetzen, wenn der Löschmodus deaktiviert wird
+        for _, obj in ipairs(deletedObjects) do
+            if obj.Parent == nil then
+                obj.Parent = game.Workspace
+            end
+        end
+        deletedObjects = {}
+    end
+end)
+
+-- Überwache Noclip und Geschwindigkeit
+game:GetService("RunService").Stepped:Connect(function(_, dt)
+    local player = game.Players.LocalPlayer
+    if noclip and player.Character then
+        -- Noclip Logik (Durch Wände gehen)
+        for _, part in pairs(player.Character:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.CanCollide = false
             end
         end
     end
-end)
 
-noclipButton.MouseButton1Click:Connect(function()
-    noclip = not noclip
-end)
-
--- Hauptmenü-Button zum Aktivieren des rechten Menüs
-local rightMenuButton = Instance.new("TextButton")
-rightMenuButton.Size = UDim2.new(0, 50, 0, 50)
-rightMenuButton.Position = UDim2.new(1, -60, 1, -60) -- Unten rechts
-rightMenuButton.Text = "≡"
-rightMenuButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-rightMenuButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-rightMenuButton.Font = Enum.Font.SourceSans
-rightMenuButton.TextSize = 24
-rightMenuButton.Parent = screenGui
-
--- Rechtes Menü (ESP)
-local rightMenu = Instance.new("Frame")
-rightMenu.Size = UDim2.new(0, 300, 0, 200)
-rightMenu.Position = UDim2.new(1, -310, 1, -220)
-rightMenu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-rightMenu.Visible = false
-rightMenu.Parent = screenGui
-
--- Button zum Schließen des rechten Menüs
-local closeButtonRightMenu = Instance.new("TextButton")
-closeButtonRightMenu.Size = UDim2.new(0, 30, 0, 30)
-closeButtonRightMenu.Position = UDim2.new(1, -35, 0, 5)
-closeButtonRightMenu.Text = "X"
-closeButtonRightMenu.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeButtonRightMenu.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-closeButtonRightMenu.Font = Enum.Font.SourceSans
-closeButtonRightMenu.TextSize = 20
-closeButtonRightMenu.Parent = rightMenu
-
-closeButtonRightMenu.MouseButton1Click:Connect(function()
-    rightMenu.Visible = false
-end)
-
--- ESP Button (Rechtes Menü)
-local espButton = Instance.new("TextButton")
-espButton.Size = UDim2.new(1, -10, 0, 40)
-espButton.Position = UDim2.new(0, 5, 0, 60)
-espButton.Text = "Toggle ESP"
-espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-espButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-espButton.Font = Enum.Font.SourceSans
-espButton.TextSize = 18
-espButton.Parent = rightMenu
-
-local espEnabled = false
-
--- Funktion für das Hinzufügen von ESP zu Spielern
-local function createESP(player)
-    -- BillboardGui für den ESP
-    local billboardGui = Instance.new("BillboardGui")
-    billboardGui.Size = UDim2.new(0, 200, 0, 50)
-    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
-    billboardGui.AlwaysOnTop = true
-    billboardGui.Parent = player.Character
-
-    -- TextLabel für den ESP
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Size = UDim2.new(1, 0, 1, 0)
-    textLabel.BackgroundTransparency = 1
-    textLabel.Text = player.Name
-    textLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Alle Spieler rot
-    textLabel.Font = Enum.Font.SourceSansBold
-    textLabel.TextSize = 14
-    textLabel.Parent = billboardGui
-
-    -- Verfolge den Charakter neu, falls er respawnt
-    player.CharacterAdded:Connect(function(character)
-        -- Stelle sicher, dass der ESP weiterhin über dem Kopf bleibt
-        if character:FindFirstChild("Head") then
-            billboardGui.Adornee = character.Head
-        end
-    end)
-
-    -- Stelle sicher, dass der ESP immer über dem Kopf bleibt
-    if player.Character and player.Character:FindFirstChild("Head") then
-        billboardGui.Adornee = player.Character.Head
-    end
-end
-
--- Toggle ESP-Button
-espButton.MouseButton1Click:Connect(function()
-    espEnabled = not espEnabled
-    if espEnabled then
-        -- ESP für alle Spieler aktivieren
-        for _, player in ipairs(game.Players:GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                createESP(player)
-            end
-        end
-    else
-        -- ESP für alle Spieler deaktivieren
-        for _, player in ipairs(game.Players:GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("BillboardGui") then
-                player.Character:FindFirstChild("BillboardGui"):Destroy()
+    if canDelete then
+        -- Lösche Objekte, die mit der Maus überfahren werden
+        local mouse = player:GetMouse()
+        local target = mouse.Target
+        if target and target.Parent and target.Parent == game.Workspace then
+            if not table.find(deletedObjects, target) then
+                table.insert(deletedObjects, target)
+                target.Parent = nil
             end
         end
     end
-end)
-
--- Toggle Menüs
-leftMenuButton.MouseButton1Click:Connect(function()
-    leftMenu.Visible = not leftMenu.Visible
-end)
-
-rightMenuButton.MouseButton1Click:Connect(function()
-    rightMenu.Visible = not rightMenu.Visible
 end)
 
 -- Rainbow-Effekt für alle Buttons
 game:GetService("RunService").Heartbeat:Connect(function()
-    leftMenuButton.BackgroundColor3 = getRainbowColor()
-    rightMenuButton.BackgroundColor3 = getRainbowColor()
-    closeButtonLeftMenu.BackgroundColor3 = getRainbowColor()
-    closeButtonRightMenu.BackgroundColor3 = getRainbowColor()
-    speedButton.BackgroundColor3 = getRainbowColor()
     noclipButton.BackgroundColor3 = getRainbowColor()
-    espButton.BackgroundColor3 = getRainbowColor()
+    deleteButton.BackgroundColor3 = getRainbowColor()
+end)
+
+-- Button zum Ausklappen des Menüs (unten rechts)
+local menuButton = Instance.new("TextButton")
+menuButton.Size = UDim2.new(0, 50, 0, 50)
+menuButton.Position = UDim2.new(1, -60, 1, -60)  -- Unten rechts
+menuButton.Text = "≡"
+menuButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+menuButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+menuButton.Font = Enum.Font.SourceSans
+menuButton.TextSize = 24
+menuButton.Parent = screenGui
+
+menuButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible  -- Toggle das Menü sichtbar/unsichtbar
 end)
