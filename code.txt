@@ -42,153 +42,33 @@ menuButton.MouseButton1Click:Connect(function()
     mainMenu.Visible = not mainMenu.Visible
 end)
 
--- ESP Button
-local espButton = Instance.new("TextButton")
-espButton.Size = UDim2.new(1, -10, 0, 40)
-espButton.Position = UDim2.new(0, 5, 0, 110)
-espButton.Text = "Toggle ESP"
-espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-espButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-espButton.Font = Enum.Font.SourceSans
-espButton.TextSize = 18
-espButton.Parent = mainMenu
-
-local espEnabled = false
-
--- Funktion für das Hinzufügen von ESP zu Spielern
-local function createESP(player)
-    -- BillboardGui für den ESP
-    local billboardGui = Instance.new("BillboardGui")
-    billboardGui.Size = UDim2.new(0, 200, 0, 50)
-    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
-    billboardGui.AlwaysOnTop = true
-    billboardGui.Parent = player.Character
-
-    -- TextLabel für den ESP
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Size = UDim2.new(1, 0, 1, 0)
-    textLabel.BackgroundTransparency = 1
-    textLabel.Text = player.Name
-    textLabel.TextColor3 = Color3.fromRGB(255, 0, 0)  -- Rot für alle Spieler
-    textLabel.Font = Enum.Font.SourceSansBold
-    textLabel.TextSize = 14
-    textLabel.Parent = billboardGui
-
-    -- Optional: Füge "Owner" unter den Spielernamen hinzu, falls der Spieler der Besitzer ist
-    if player.Name == "Aewpuu" then  -- Ersetze "Aewpuu" mit dem Namen des Besitzers
-        local ownerLabel = Instance.new("TextLabel")
-        ownerLabel.Size = UDim2.new(1, 0, 0, 20)
-        ownerLabel.Position = UDim2.new(0, 0, 1, 0)
-        ownerLabel.BackgroundTransparency = 1
-        ownerLabel.Text = "Owner"
-        ownerLabel.TextColor3 = Color3.fromRGB(255, 0, 0)  -- Rot für "Owner"
-        ownerLabel.Font = Enum.Font.SourceSansBold
-        ownerLabel.TextSize = 14
-        ownerLabel.Parent = billboardGui
-    end
-
-    -- Verfolge den Charakter neu, falls er respawnt
-    player.CharacterAdded:Connect(function(character)
-        -- Stelle sicher, dass der ESP weiterhin über dem Kopf bleibt
-        if character:FindFirstChild("Head") then
-            billboardGui.Adornee = character.Head
-        end
-    end)
-
-    -- Stelle sicher, dass der ESP immer über dem Kopf bleibt
-    if player.Character and player.Character:FindFirstChild("Head") then
-        billboardGui.Adornee = player.Character.Head
-    end
-end
-
--- Toggle ESP-Button
-espButton.MouseButton1Click:Connect(function()
-    espEnabled = not espEnabled
-    if espEnabled then
-        -- ESP für alle Spieler aktivieren
-        for _, player in ipairs(game.Players:GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                createESP(player)
-            end
-        end
-    else
-        -- ESP für alle Spieler deaktivieren
-        for _, player in ipairs(game.Players:GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("BillboardGui") then
-                player.Character:FindFirstChild("BillboardGui"):Destroy()
-            end
-        end
-    end
-end)
-
--- Noclip Button
-local noclipButton = Instance.new("TextButton")
-noclipButton.Size = UDim2.new(1, -10, 0, 40)
-noclipButton.Position = UDim2.new(0, 5, 0, 160)
-noclipButton.Text = "Toggle Noclip"
-noclipButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-noclipButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-noclipButton.Font = Enum.Font.SourceSans
-noclipButton.TextSize = 18
-noclipButton.Parent = mainMenu
-
-local noclip = false
-game:GetService("RunService").Stepped:Connect(function()
-    if noclip and game.Players.LocalPlayer.Character then
-        for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
-        end
-    end
-end)
-
-noclipButton.MouseButton1Click:Connect(function()
-    noclip = not noclip
-end)
-
--- In den Boden ziehen Button
+-- Button für das "Bodenziehen"
 local groundButton = Instance.new("TextButton")
 groundButton.Size = UDim2.new(1, -10, 0, 40)
 groundButton.Position = UDim2.new(0, 5, 0, 210)
-groundButton.Text = "Pull to Ground (3s)"
+groundButton.Text = "Ground Sink"
 groundButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 groundButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 groundButton.Font = Enum.Font.SourceSans
 groundButton.TextSize = 18
 groundButton.Parent = mainMenu
 
+-- Funktion zum Boden ziehen und wieder hochkommen
 groundButton.MouseButton1Click:Connect(function()
-    local character = game.Players.LocalPlayer.Character
-    if character then
-        -- Spieler für 3 Sekunden unsichtbar machen und im Boden positionieren
-        local originalPosition = character.HumanoidRootPart.Position
-        local groundPosition = Vector3.new(originalPosition.X, originalPosition.Y - 5, originalPosition.Z)
-
-        -- Spieler in den Boden ziehen (mit einer kleinen Positionänderung)
-        character.HumanoidRootPart.CFrame = CFrame.new(groundPosition)
-
-        -- Unsichtbar machen
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.Transparency = 1
-                part.CanCollide = false
-            end
-        end
-
-        -- Nach 3 Sekunden den Spieler wieder sichtbar machen und an die neue Position zurücksetzen
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    
+    if character and humanoidRootPart then
+        -- Spieler nach unten ziehen
+        local targetPosition = humanoidRootPart.Position - Vector3.new(0, 5, 0) -- Zieht den Spieler 5 Studs in den Boden
+        humanoidRootPart.CFrame = CFrame.new(targetPosition)
+        
+        -- Spieler bleibt für 3 Sekunden unten
         task.wait(3)
-
-        -- Spieler wieder sichtbar machen und an die ursprüngliche Position zurücksetzen
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.Transparency = 0
-                part.CanCollide = true
-            end
-        end
-
-        -- Spieler an die ursprüngliche Position zurücksetzen
-        character.HumanoidRootPart.CFrame = CFrame.new(originalPosition)
+        
+        -- Spieler nach oben bringen
+        local newPosition = humanoidRootPart.Position + Vector3.new(0, 5, 0) -- Spieler wird um 5 Studs nach oben bewegt
+        humanoidRootPart.CFrame = CFrame.new(newPosition)
     end
 end)
-
