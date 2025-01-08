@@ -26,7 +26,7 @@ menuButton.MouseButton1Click:Connect(function()
     mainMenu.Visible = not mainMenu.Visible
 end)
 
--- Linkes Menü (Noclip, Teleport, Go to Ground)
+-- Linkes Menü (Noclip, Teleport, etc.)
 local leftMenu = Instance.new("Frame")
 leftMenu.Size = UDim2.new(0, 300, 0, 200)
 leftMenu.Position = UDim2.new(0, 0, 1, -220)
@@ -49,22 +49,7 @@ closeButtonLeftMenu.MouseButton1Click:Connect(function()
     leftMenu.Visible = false
 end)
 
--- Button für das linke Menü
-local leftMenuButton = Instance.new("TextButton")
-leftMenuButton.Size = UDim2.new(0, 50, 0, 50)
-leftMenuButton.Position = UDim2.new(1, -60, 1, -120) -- Unten links
-leftMenuButton.Text = "≡"
-leftMenuButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-leftMenuButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-leftMenuButton.Font = Enum.Font.SourceSans
-leftMenuButton.TextSize = 24
-leftMenuButton.Parent = screenGui
-
-leftMenuButton.MouseButton1Click:Connect(function()
-    leftMenu.Visible = not leftMenu.Visible
-end)
-
--- Funktionen für das linke Menü (Noclip, Teleport, Go to Ground)
+-- Button zum Toggle Noclip
 local noclipButton = Instance.new("TextButton")
 noclipButton.Size = UDim2.new(1, -10, 0, 40)
 noclipButton.Position = UDim2.new(0, 5, 0, 60)
@@ -90,7 +75,7 @@ noclipButton.MouseButton1Click:Connect(function()
     noclip = not noclip
 end)
 
--- Button für Teleport und Hit
+-- Button zum Teleportieren und Hitten
 local teleportButton = Instance.new("TextButton")
 teleportButton.Size = UDim2.new(1, -10, 0, 40)
 teleportButton.Position = UDim2.new(0, 5, 0, 110)
@@ -102,25 +87,103 @@ teleportButton.TextSize = 18
 teleportButton.Parent = leftMenu
 
 teleportButton.MouseButton1Click:Connect(function()
-    -- Hier kommt der Code für Teleport and Hit
+    local players = game.Players:GetPlayers()
+    local localPlayer = game.Players.LocalPlayer
+
+    -- Filtere alle Spieler, die nicht der lokale Spieler sind und die ein Character haben
+    local otherPlayers = {}
+    for _, player in ipairs(players) do
+        if player ~= localPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            table.insert(otherPlayers, player)
+        end
+    end
+
+    -- Funktion zum "Durchrattern" durch alle Spieler
+    local function teleportAndHit(player)
+        -- Teleportiere den lokalen Spieler zum aktuellen Zielspieler
+        localPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
+        task.wait(0.1) -- Kurze Verzögerung für den Effekt
+
+        -- Feuere den ClickDetector des Zielspielers ab, falls vorhanden
+        local clickDetector = player.Character:FindFirstChildWhichIsA("ClickDetector")
+        if clickDetector then
+            fireclickdetector(clickDetector)
+        end
+    end
+
+    -- Gehe durch alle Spieler nacheinander
+    for _, player in ipairs(otherPlayers) do
+        teleportAndHit(player)
+    end
 end)
 
--- Button für Go to Ground
-local goToGroundButton = Instance.new("TextButton")
-goToGroundButton.Size = UDim2.new(1, -10, 0, 40)
-goToGroundButton.Position = UDim2.new(0, 5, 0, 160)
-goToGroundButton.Text = "Go to Ground"
-goToGroundButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-goToGroundButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-goToGroundButton.Font = Enum.Font.SourceSans
-goToGroundButton.TextSize = 18
-goToGroundButton.Parent = leftMenu
+-- ESP Button
+local espButton = Instance.new("TextButton")
+espButton.Size = UDim2.new(1, -10, 0, 40)
+espButton.Position = UDim2.new(0, 5, 0, 160)
+espButton.Text = "Toggle ESP"
+espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+espButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+espButton.Font = Enum.Font.SourceSans
+espButton.TextSize = 18
+espButton.Parent = leftMenu
 
-goToGroundButton.MouseButton1Click:Connect(function()
-    -- Code für Go to Ground
+local espEnabled = false
+
+-- Funktion für das Hinzufügen von ESP zu Spielern
+local function createESP(player)
+    -- BillboardGui für den ESP
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Size = UDim2.new(0, 200, 0, 50)
+    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = player.Character
+
+    -- TextLabel für den ESP
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = player.Name .. " - Owner" -- Owner Text hinzugefügt
+    textLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+    textLabel.Font = Enum.Font.SourceSansBold
+    textLabel.TextSize = 14
+    textLabel.Parent = billboardGui
+
+    -- Verfolge den Charakter neu, falls er respawnt
+    player.CharacterAdded:Connect(function(character)
+        -- Stelle sicher, dass der ESP weiterhin über dem Kopf bleibt
+        if character:FindFirstChild("Head") then
+            billboardGui.Adornee = character.Head
+        end
+    end)
+
+    -- Stelle sicher, dass der ESP immer über dem Kopf bleibt
+    if player.Character and player.Character:FindFirstChild("Head") then
+        billboardGui.Adornee = player.Character.Head
+    end
+end
+
+-- Toggle ESP-Button
+espButton.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    if espEnabled then
+        -- ESP für alle Spieler aktivieren
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                createESP(player)
+            end
+        end
+    else
+        -- ESP für alle Spieler deaktivieren
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("BillboardGui") then
+                player.Character:FindFirstChild("BillboardGui"):Destroy()
+            end
+        end
+    end
 end)
 
--- Rechtes Menü (ESP, Speed und Jump)
+-- Rechts Menü (Speed, Jump, etc.)
 local rightMenu = Instance.new("Frame")
 rightMenu.Size = UDim2.new(0, 300, 0, 200)
 rightMenu.Position = UDim2.new(1, -310, 1, -220)
@@ -143,129 +206,21 @@ closeButtonRightMenu.MouseButton1Click:Connect(function()
     rightMenu.Visible = false
 end)
 
--- Button für das rechte Menü
-local rightMenuButton = Instance.new("TextButton")
-rightMenuButton.Size = UDim2.new(0, 50, 0, 50)
-rightMenuButton.Position = UDim2.new(0, 10, 1, -120) -- Unten rechts
-rightMenuButton.Text = "≡"
-rightMenuButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-rightMenuButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-rightMenuButton.Font = Enum.Font.SourceSans
-rightMenuButton.TextSize = 24
-rightMenuButton.Parent = screenGui
+-- Button für Speed
+local speedButton = Instance.new("TextButton")
+speedButton.Size = UDim2.new(1, -10, 0, 40)
+speedButton.Position = UDim2.new(0, 5, 0, 60)
+speedButton.Text = "Speed x2"
+speedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+speedButton.Font = Enum.Font.SourceSans
+speedButton.TextSize = 18
+speedButton.Parent = rightMenu
 
-rightMenuButton.MouseButton1Click:Connect(function()
-    rightMenu.Visible = not rightMenu.Visible
-end)
-
--- ESP Button (im rechten Menü)
-local espButton = Instance.new("TextButton")
-espButton.Size = UDim2.new(1, -10, 0, 40)
-espButton.Position = UDim2.new(0, 5, 0, 60)
-espButton.Text = "Toggle ESP"
-espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-espButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-espButton.Font = Enum.Font.SourceSans
-espButton.TextSize = 18
-espButton.Parent = rightMenu
-
-local espEnabled = false
-
--- Funktion für das Hinzufügen von ESP zu Spielern
-local function createESP(player)
-    -- BillboardGui für den ESP
-    local billboardGui = Instance.new("BillboardGui")
-    billboardGui.Size = UDim2.new(0, 200, 0, 50)
-    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
-    billboardGui.AlwaysOnTop = true
-    billboardGui.Parent = player.Character
-
-    -- TextLabel für den ESP
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Size = UDim2.new(1, 0, 1, 0)
-    textLabel.BackgroundTransparency = 1
-    textLabel.Text = player.Name
-    textLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Rot
-    textLabel.Font = Enum.Font.SourceSansBold
-    textLabel.TextSize = 14
-    textLabel.Parent = billboardGui
-
-    -- Verfolge den Charakter neu, falls er respawnt
-    player.CharacterAdded:Connect(function(character)
-        -- Stelle sicher, dass der ESP weiterhin über dem Kopf bleibt
-        if character:FindFirstChild("Head") then
-            billboardGui.Adornee = character.Head
-        end
-    end)
-
-    -- Stelle sicher, dass der ESP immer über dem Kopf bleibt
-    if player.Character and player.Character:FindFirstChild("Head") then
-        billboardGui.Adornee = player.Character.Head
-    end
-end
-
-espButton.MouseButton1Click:Connect(function()
-    espEnabled = not espEnabled
-    if espEnabled then
-        -- ESP für alle Spieler aktivieren
-        for _, player in ipairs(game.Players:GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                createESP(player)
-            end
-        end
-    else
-        -- ESP für alle Spieler deaktivieren
-        for _, player in ipairs(game.Players:GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("BillboardGui") then
-                player.Character:FindFirstChild("BillboardGui"):Destroy()
-            end
-        end
-    end
-end)
-
--- Speed und Jump Einstellung (Menü)
-local movementButton = Instance.new("TextButton")
-movementButton.Size = UDim2.new(1, -10, 0, 40)
-movementButton.Position = UDim2.new(0, 5, 0, 160)
-movementButton.Text = "Adjust Speed & Jump"
-movementButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-movementButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-movementButton.Font = Enum.Font.SourceSans
-movementButton.TextSize = 18
-movementButton.Parent = rightMenu
-
-local movementMenu = Instance.new("Frame")
-movementMenu.Size = UDim2.new(0, 300, 0, 100)
-movementMenu.Position = UDim2.new(0, 0, 0, 50)
-movementMenu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-movementMenu.Visible = false
-movementMenu.Parent = rightMenu
-
-local speedSlider = Instance.new("Slider")
-speedSlider.Size = UDim2.new(1, -10, 0, 20)
-speedSlider.Position = UDim2.new(0, 5, 0, 5)
-speedSlider.MinValue = 0
-speedSlider.MaxValue = 100
-speedSlider.Value = 16
-speedSlider.Parent = movementMenu
-
-local jumpSlider = Instance.new("Slider")
-jumpSlider.Size = UDim2.new(1, -10, 0, 20)
-jumpSlider.Position = UDim2.new(0, 5, 0, 35)
-jumpSlider.MinValue = 0
-jumpSlider.MaxValue = 100
-jumpSlider.Value = 50
-jumpSlider.Parent = movementMenu
-
-movementButton.MouseButton1Click:Connect(function()
-    movementMenu.Visible = not movementMenu.Visible
-end)
-
--- Sprungkraft und Geschwindigkeit anwenden
-game:GetService("RunService").Heartbeat:Connect(function()
-    local character = game.Players.LocalPlayer.Character
-    if character then
-        character.Humanoid.WalkSpeed = speedSlider.Value
-        character.Humanoid.JumpHeight = jumpSlider.Value
+speedButton.MouseButton1Click:Connect(function()
+    local player = game.Players.LocalPlayer
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        local humanoid = player.Character.Humanoid
+        humanoid.WalkSpeed = humanoid.WalkSpeed * 2
     end
 end)
