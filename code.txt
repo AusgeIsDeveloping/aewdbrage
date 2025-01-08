@@ -2,31 +2,24 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "MainMenuGui"
 screenGui.Parent = game.CoreGui
 
--- Hauptmenü-Frame
-local mainMenu = Instance.new("Frame")
-mainMenu.Size = UDim2.new(0, 300, 0, 400)
-mainMenu.Position = UDim2.new(1, -310, 1, -410)
-mainMenu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-mainMenu.Visible = false
-mainMenu.Parent = screenGui
+-- Rainbow Farben Funktion
+local function getRainbowColor()
+    local time = tick()
+    return Color3.fromHSV(time % 5 / 5, 1, 1)
+end
 
--- Menü-Button (MMAew) zum Ein- und Ausklappen
-local menuButton = Instance.new("TextButton")
-menuButton.Size = UDim2.new(0, 50, 0, 50)
-menuButton.Position = UDim2.new(1, -60, 1, -60) -- Unten rechts
-menuButton.Text = "≡"
-menuButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-menuButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-menuButton.Font = Enum.Font.SourceSans
-menuButton.TextSize = 24
-menuButton.Parent = screenGui
+-- Hauptmenü-Button zum Aktivieren des linken Menüs
+local leftMenuButton = Instance.new("TextButton")
+leftMenuButton.Size = UDim2.new(0, 50, 0, 50)
+leftMenuButton.Position = UDim2.new(0, 10, 1, -60) -- Unten links
+leftMenuButton.Text = "≡"
+leftMenuButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+leftMenuButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+leftMenuButton.Font = Enum.Font.SourceSans
+leftMenuButton.TextSize = 24
+leftMenuButton.Parent = screenGui
 
--- Toggle Funktion für das Menü
-menuButton.MouseButton1Click:Connect(function()
-    mainMenu.Visible = not mainMenu.Visible
-end)
-
--- Linkes Menü (Noclip, Teleport, etc.)
+-- Linkes Menü (Speed, Noclip)
 local leftMenu = Instance.new("Frame")
 leftMenu.Size = UDim2.new(0, 300, 0, 200)
 leftMenu.Position = UDim2.new(0, 0, 1, -220)
@@ -34,7 +27,7 @@ leftMenu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 leftMenu.Visible = false
 leftMenu.Parent = screenGui
 
--- Schließen-Button für das linke Menü
+-- Button zum Schließen des linken Menüs
 local closeButtonLeftMenu = Instance.new("TextButton")
 closeButtonLeftMenu.Size = UDim2.new(0, 30, 0, 30)
 closeButtonLeftMenu.Position = UDim2.new(1, -35, 0, 5)
@@ -49,10 +42,29 @@ closeButtonLeftMenu.MouseButton1Click:Connect(function()
     leftMenu.Visible = false
 end)
 
--- Button zum Toggle Noclip
+-- Speed Verdoppeln Button (Linkes Menü)
+local speedButton = Instance.new("TextButton")
+speedButton.Size = UDim2.new(1, -10, 0, 40)
+speedButton.Position = UDim2.new(0, 5, 0, 60)
+speedButton.Text = "Speed x2"
+speedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+speedButton.Font = Enum.Font.SourceSans
+speedButton.TextSize = 18
+speedButton.Parent = leftMenu
+
+speedButton.MouseButton1Click:Connect(function()
+    local player = game.Players.LocalPlayer
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        local humanoid = player.Character.Humanoid
+        humanoid.WalkSpeed = humanoid.WalkSpeed * 2
+    end
+end)
+
+-- Noclip Button (Linkes Menü)
 local noclipButton = Instance.new("TextButton")
 noclipButton.Size = UDim2.new(1, -10, 0, 40)
-noclipButton.Position = UDim2.new(0, 5, 0, 60)
+noclipButton.Position = UDim2.new(0, 5, 0, 110)
 noclipButton.Text = "Toggle Noclip"
 noclipButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 noclipButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
@@ -75,58 +87,50 @@ noclipButton.MouseButton1Click:Connect(function()
     noclip = not noclip
 end)
 
--- Button zum Teleportieren und Hitten
-local teleportButton = Instance.new("TextButton")
-teleportButton.Size = UDim2.new(1, -10, 0, 40)
-teleportButton.Position = UDim2.new(0, 5, 0, 110)
-teleportButton.Text = "Teleport and Hit"
-teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-teleportButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-teleportButton.Font = Enum.Font.SourceSans
-teleportButton.TextSize = 18
-teleportButton.Parent = leftMenu
+-- Hauptmenü-Button zum Aktivieren des rechten Menüs
+local rightMenuButton = Instance.new("TextButton")
+rightMenuButton.Size = UDim2.new(0, 50, 0, 50)
+rightMenuButton.Position = UDim2.new(1, -60, 1, -60) -- Unten rechts
+rightMenuButton.Text = "≡"
+rightMenuButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+rightMenuButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+rightMenuButton.Font = Enum.Font.SourceSans
+rightMenuButton.TextSize = 24
+rightMenuButton.Parent = screenGui
 
-teleportButton.MouseButton1Click:Connect(function()
-    local players = game.Players:GetPlayers()
-    local localPlayer = game.Players.LocalPlayer
+-- Rechtes Menü (ESP)
+local rightMenu = Instance.new("Frame")
+rightMenu.Size = UDim2.new(0, 300, 0, 200)
+rightMenu.Position = UDim2.new(1, -310, 1, -220)
+rightMenu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+rightMenu.Visible = false
+rightMenu.Parent = screenGui
 
-    -- Filtere alle Spieler, die nicht der lokale Spieler sind und die ein Character haben
-    local otherPlayers = {}
-    for _, player in ipairs(players) do
-        if player ~= localPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            table.insert(otherPlayers, player)
-        end
-    end
+-- Button zum Schließen des rechten Menüs
+local closeButtonRightMenu = Instance.new("TextButton")
+closeButtonRightMenu.Size = UDim2.new(0, 30, 0, 30)
+closeButtonRightMenu.Position = UDim2.new(1, -35, 0, 5)
+closeButtonRightMenu.Text = "X"
+closeButtonRightMenu.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButtonRightMenu.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+closeButtonRightMenu.Font = Enum.Font.SourceSans
+closeButtonRightMenu.TextSize = 20
+closeButtonRightMenu.Parent = rightMenu
 
-    -- Funktion zum "Durchrattern" durch alle Spieler
-    local function teleportAndHit(player)
-        -- Teleportiere den lokalen Spieler zum aktuellen Zielspieler
-        localPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
-        task.wait(0.1) -- Kurze Verzögerung für den Effekt
-
-        -- Feuere den ClickDetector des Zielspielers ab, falls vorhanden
-        local clickDetector = player.Character:FindFirstChildWhichIsA("ClickDetector")
-        if clickDetector then
-            fireclickdetector(clickDetector)
-        end
-    end
-
-    -- Gehe durch alle Spieler nacheinander
-    for _, player in ipairs(otherPlayers) do
-        teleportAndHit(player)
-    end
+closeButtonRightMenu.MouseButton1Click:Connect(function()
+    rightMenu.Visible = false
 end)
 
--- ESP Button
+-- ESP Button (Rechtes Menü)
 local espButton = Instance.new("TextButton")
 espButton.Size = UDim2.new(1, -10, 0, 40)
-espButton.Position = UDim2.new(0, 5, 0, 160)
+espButton.Position = UDim2.new(0, 5, 0, 60)
 espButton.Text = "Toggle ESP"
 espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 espButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 espButton.Font = Enum.Font.SourceSans
 espButton.TextSize = 18
-espButton.Parent = leftMenu
+espButton.Parent = rightMenu
 
 local espEnabled = false
 
@@ -143,8 +147,8 @@ local function createESP(player)
     local textLabel = Instance.new("TextLabel")
     textLabel.Size = UDim2.new(1, 0, 1, 0)
     textLabel.BackgroundTransparency = 1
-    textLabel.Text = player.Name .. " - Owner" -- Owner Text hinzugefügt
-    textLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+    textLabel.Text = player.Name
+    textLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Alle Spieler rot
     textLabel.Font = Enum.Font.SourceSansBold
     textLabel.TextSize = 14
     textLabel.Parent = billboardGui
@@ -183,44 +187,22 @@ espButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Rechts Menü (Speed, Jump, etc.)
-local rightMenu = Instance.new("Frame")
-rightMenu.Size = UDim2.new(0, 300, 0, 200)
-rightMenu.Position = UDim2.new(1, -310, 1, -220)
-rightMenu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-rightMenu.Visible = false
-rightMenu.Parent = screenGui
-
--- Schließen-Button für das rechte Menü
-local closeButtonRightMenu = Instance.new("TextButton")
-closeButtonRightMenu.Size = UDim2.new(0, 30, 0, 30)
-closeButtonRightMenu.Position = UDim2.new(1, -35, 0, 5)
-closeButtonRightMenu.Text = "X"
-closeButtonRightMenu.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeButtonRightMenu.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-closeButtonRightMenu.Font = Enum.Font.SourceSans
-closeButtonRightMenu.TextSize = 20
-closeButtonRightMenu.Parent = rightMenu
-
-closeButtonRightMenu.MouseButton1Click:Connect(function()
-    rightMenu.Visible = false
+-- Toggle Menüs
+leftMenuButton.MouseButton1Click:Connect(function()
+    leftMenu.Visible = not leftMenu.Visible
 end)
 
--- Button für Speed
-local speedButton = Instance.new("TextButton")
-speedButton.Size = UDim2.new(1, -10, 0, 40)
-speedButton.Position = UDim2.new(0, 5, 0, 60)
-speedButton.Text = "Speed x2"
-speedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-speedButton.Font = Enum.Font.SourceSans
-speedButton.TextSize = 18
-speedButton.Parent = rightMenu
+rightMenuButton.MouseButton1Click:Connect(function()
+    rightMenu.Visible = not rightMenu.Visible
+end)
 
-speedButton.MouseButton1Click:Connect(function()
-    local player = game.Players.LocalPlayer
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        local humanoid = player.Character.Humanoid
-        humanoid.WalkSpeed = humanoid.WalkSpeed * 2
-    end
+-- Rainbow-Effekt für alle Buttons
+game:GetService("RunService").Heartbeat:Connect(function()
+    leftMenuButton.BackgroundColor3 = getRainbowColor()
+    rightMenuButton.BackgroundColor3 = getRainbowColor()
+    closeButtonLeftMenu.BackgroundColor3 = getRainbowColor()
+    closeButtonRightMenu.BackgroundColor3 = getRainbowColor()
+    speedButton.BackgroundColor3 = getRainbowColor()
+    noclipButton.BackgroundColor3 = getRainbowColor()
+    espButton.BackgroundColor3 = getRainbowColor()
 end)
