@@ -1,38 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-    <key>PayloadContent</key>
-    <array>
-        <dict>
-            <key>PayloadIdentifier</key>
-            <string>com.example.webblocker</string>
-            <key>PayloadType</key>
-            <string>com.apple.webcontent-filter</string>
-            <key>PayloadVersion</key>
-            <integer>1</integer>
-            <key>FilterType</key>
-            <string>Blacklist</string>
-            <key>BlacklistedURLs</key>
-            <array>
-                <string>https://www.youtube.com</string>
-                <string>https://www.facebook.com</string>
-                <string>https://www.instagram.com</string>
-                <string>https://www.tiktok.com</string>
-            </array>
-        </dict>
-    </array>
-    <key>PayloadDisplayName</key>
-    <string>Webseiten-Blocker</string>
-    <key>PayloadIdentifier</key>
-    <string>com.example.webblockprofile</string>
-    <key>PayloadOrganization</key>
-    <string>Mein Unternehmen</string>
+  <dict>
     <key>PayloadType</key>
-    <string>Configuration</string>
-    <key>PayloadUUID</key>
-    <string>98765432-DCBA-4321-DCBA-0987654321AB</string>
+    <string>com.apple.app.lock</string>
     <key>PayloadVersion</key>
     <integer>1</integer>
-</dict>
+    <key>PayloadIdentifier</key>
+    <string>com.example.appmonitor</string>
+    <key>PayloadUUID</key>
+    <string>12345678-1234-5678-1234-567812345678</string>
+    <key>PayloadDisplayName</key>
+    <string>App Monitor</string>
+    <key>PayloadOrganization</key>
+    <string>DeineFirma</string>
+    <key>PayloadDescription</key>
+    <string>Überwacht App-Starts und sendet Ping an Webhook</string>
+    
+    <!-- Beispiel für eine verwaltete App mit Konfigurationswerten -->
+    <key>ManagedApps</key>
+    <array>
+      <dict>
+        <key>BundleID</key>
+        <string>com.example.trackerapp</string>
+        <key>Configuration</key>
+        <dict>
+          <key>WebhookURL</key>
+          <string>https://discord.com/api/webhooks/1354136790612578355/_kc3xnkY0TBSBoOOsCKBkGex0_0oZ0aw_NcF-X0nvwK7XA8EL1flOd0h8ByixYQ08ADm</string>
+        </dict>
+      </dict>
+    </array>
+  </dict>
 </plist>
