@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>PayloadIdentifier</key>
+            <string>com.example.webblocker</string>
+            <key>PayloadType</key>
+            <string>com.apple.webcontent-filter</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>FilterType</key>
+            <string>Blacklist</string>
+            <key>BlacklistedURLs</key>
+            <array>
+                <string>https://www.youtube.com</string>
+                <string>https://www.facebook.com</string>
+                <string>https://www.instagram.com</string>
+                <string>https://www.tiktok.com</string>
+            </array>
+        </dict>
+    </array>
+    <key>PayloadDisplayName</key>
+    <string>Webseiten-Blocker</string>
+    <key>PayloadIdentifier</key>
+    <string>com.example.webblockprofile</string>
+    <key>PayloadOrganization</key>
+    <string>Mein Unternehmen</string>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>98765432-DCBA-4321-DCBA-0987654321AB</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+</dict>
+</plist>
